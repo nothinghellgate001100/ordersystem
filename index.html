@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order System</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .balance-card {
+            background-color: #d3bfa8;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .stats-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .btn-order {
+            background-color: #5a3d5c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .btn-order:hover {
+            background-color: #4a2d4c;
+        }
+        .order-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+        .order-footer button {
+            background-color: #5a3d5c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .order-footer button:hover {
+            background-color: #4a2d4c;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="balance-card">
+        <h2>Amazon</h2>
+        <p>Account Balance:</p>
+        <h3 id="account-balance">0.00 USDT</h3>
+    </div>
+    <div class="stats-card">
+        <div class="row">
+            <div class="col">
+                <p><strong id="todays-times">0</strong><br>Today's Times</p>
+            </div>
+            <div class="col">
+                <p><strong id="todays-commission">0</strong> USDT<br>Today's commission</p>
+            </div>
+            <div class="col">
+                <p><strong id="cash-gap">0</strong> USDT<br>Cash gap between tasks</p>
+            </div>
+            <div class="col">
+                <p><strong id="yesterday-commission">0</strong> USDT<br>Yesterday's buy commission</p>
+            </div>
+            <div class="col">
+                <p><strong id="team-commission">0</strong> USDT<br>Yesterday's team commission</p>
+            </div>
+            <div class="col">
+                <p><strong id="frozen-accounts">0</strong> USDT<br>Money frozen in accounts</p>
+            </div>
+        </div>
+    </div>
+    <div class="text-center mt-4">
+        <button class="btn-order" onclick="grabOrder()">Grab the order immediately</button>
+    </div>
+    <div id="order-container" class="order-card">
+        <div class="order-header"></div>
+        <div class="d-flex justify-content-between mt-3">
+            <img src="" alt="Product Image" class="img-thumbnail" width="100">
+            <div class="ml-3">
+                <p class="order-product"></p>
+                <p class="order-price"></p>
+                <p class="order-quantity"></p>
+            </div>
+        </div>
+        <p class="mt-3"><strong>Transaction time:</strong> <span class="order-time"></span></p>
+        <p><strong>Order amount:</strong> <span class="order-amount"></span> USDT</p>
+        <p><strong>Commissions:</strong> <span class="order-commission"></span> USDT</p>
+        <p><strong>Expected income:</strong> <span class="order-income"></span> USDT</p>
+        <div class="order-footer text-center">
+            <button onclick="submitOrder()">Submit order</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let orders = [];
+    let currentOrderIndex = 0;
+    let totalCommission = 0;
+    let totalAmount = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Generate fake orders data
+        for (let i = 1; i <= 20; i++) {
+            const price = (Math.random() * 100).toFixed(2);
+            const quantity = Math.floor(Math.random() * 10) + 1;
+            const orderAmount = (price * quantity).toFixed(2);
+            const commissions = (orderAmount * 0.04).toFixed(2);
+            const expectedIncome = (parseFloat(orderAmount) + parseFloat(commissions)).toFixed(2);
+            const transactionTime = new Date().toISOString().split('T').join(' ').split('.')[0];
+
+            orders.push({
+                id: `985188554645${String(i).padStart(4, '0')}`,
+                product: "TURBO Kipas Angin Dinding 16\" Dual Blade CFR 5889 - Wall Fan TORNADO",
+                price: price,
+                quantity: quantity,
+                orderAmount: orderAmount,
+                commissions: commissions,
+                expectedIncome: expectedIncome,
+                transactionTime: transactionTime
+            });
+        }
+    });
+
+    function grabOrder() {
+        if (currentOrderIndex < orders.length) {
+            const order = orders[currentOrderIndex];
+            document.querySelector('.order-header').innerText = `Order Nos: ${order.id}`;
+            document.querySelector('.order-card img').src = "https://via.placeholder.com/100";
+            document.querySelector('.order-product').innerText = order.product;
+            document.querySelector('.order-price').innerText = `Price: ${order.price} USD`;
+            document.querySelector('.order-quantity').innerText = `Quantity: ${order.quantity}`;
+            document.querySelector('.order-time').innerText = order.transactionTime;
+            document.querySelector('.order-amount').innerText = order.orderAmount;
+            document.querySelector('.order-commission').innerText = order.commissions;
+            document.querySelector('.order-income').innerText = order.expectedIncome;
+
+            document.getElementById('order-container').style.display = 'block';
+        } else {
+            alert('No more orders to grab!');
+        }
+    }
+
+    function submitOrder() {
+        if (currentOrderIndex < orders.length) {
+            const order = orders[currentOrderIndex];
+
+            // Update stats
+            document.getElementById('todays-times').innerText = currentOrderIndex + 1;
+            totalCommission += parseFloat(order.commissions);
+            document.getElementById('todays-commission').innerText = totalCommission.toFixed(2);
+            totalAmount += parseFloat(order.orderAmount) + parseFloat(order.commissions);
+            document.getElementById('account-balance').innerText = totalAmount.toFixed(2) + ' USDT';
+
+            // Hide the order card and prepare for next order
+            document.getElementById('order-container').style.display = 'none';
+            currentOrderIndex++;
+        } else {
+            alert('No more orders to submit!');
+        }
+    }
+</script>
+</body>
+</html>
